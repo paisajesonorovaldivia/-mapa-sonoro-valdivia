@@ -32,6 +32,19 @@
               opacity: 1,
               fillOpacity: 0.8
             });
+          },
+          onEachFeature: function (feature, layer) {
+            var name = feature.properties.name || "Sin título";
+            var audio = feature.properties.audio_link;
+            var popupContent = "<b>" + name + "</b>";
+            if (audio && audio.startsWith("http")) {
+              if (audio.includes("youtu")) {
+                popupContent += "<br><a href='" + audio + "' target='_blank'>Escuchar audio</a>";
+              } else {
+                popupContent += "<br><audio controls src='" + audio + "'></audio>";
+              }
+            }
+            layer.bindPopup(popupContent);
           }
         }).addTo(map);
       });
