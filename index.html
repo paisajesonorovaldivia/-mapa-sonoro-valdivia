@@ -30,7 +30,6 @@
 <script>
   var map = L.map('map', { center: [-39.8142, -73.2459], zoom: 13 });
 
-  // Estilos base
   var claro = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; OpenStreetMap & CartoDB', subdomains: 'abcd', maxZoom: 19
   });
@@ -53,7 +52,6 @@
 
   L.control.layers(baseMaps).addTo(map);
 
-  // Cargar GeoJSON con marker-color para colores exactos
   fetch('mapcolors.geojson')
     .then(res => res.json())
     .then(data => {
@@ -85,7 +83,6 @@
       }).addTo(map);
     });
 
-  // Leyenda visual independiente con colores exactos
   var legend = L.control({position: 'bottomright'});
   legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'legend');
@@ -95,7 +92,7 @@
     div.innerHTML += '<i style="background:rgb(118,130,219)"></i> Barrios y calles Emblemáticas<br>';
     div.innerHTML += '<i style="background:rgb(232,186,17)"></i> Ferias Libres<br>';
     div.innerHTML += '<i style="background:rgb(20,143,22)"></i> Parques y humedales<br>';
-    div.innerHTML += '<i style="background:rgb(118,130,219)"></i> Plazas<br>';
+    div.innerHTML += '<i style="background:rgb(138,43,226)"></i> Plazas<br>';  // Violeta/morado
     div.innerHTML += '<i style="background:rgb(255,0,0)"></i> Epicentros Urbanos<br>';
     return div;
   };
