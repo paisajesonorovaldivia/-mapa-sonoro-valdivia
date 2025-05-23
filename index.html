@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Mapa Sonoro Valdivia - Mapa Interactivo</title>
+  <title>Mapa Sonoro Valdivia</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <style>
@@ -30,7 +30,7 @@
 <script>
   var map = L.map('map', { center: [-39.8142, -73.2459], zoom: 13 });
 
-  // Mapas base
+  // Estilos de mapa
   var claro = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; OpenStreetMap & CartoDB', subdomains: 'abcd', maxZoom: 19
   });
@@ -53,25 +53,13 @@
 
   L.control.layers(baseMaps).addTo(map);
 
-  // Colores por categoría
-  var categoryColors = {
-    "Puentes": "#0ed4fb",
-    "Avenidas": "#337fff",
-    "Barrios y calles Emblematicas": "#7682db",
-    "Ferias Libres": "#e8ba11",
-    "Parques y humedales": "#148f16",
-    "Plazas": "#7682db",
-    "Epicentros Urbanos": "#ff0000"
-  };
-
   // Cargar GeoJSON
   fetch('mapcolors.geojson')
     .then(res => res.json())
     .then(data => {
       L.geoJSON(data, {
         pointToLayer: function (feature, latlng) {
-          var categoria = feature.properties.categoria;
-          var color = categoryColors[categoria] || "#3388ff";
+          var color = feature.properties["marker-color"] || "#3388ff";
           return L.circleMarker(latlng, {
             radius: 8,
             fillColor: color,
@@ -83,9 +71,8 @@
         },
         onEachFeature: function (feature, layer) {
           var name = feature.properties.name || "Sin título";
-          var categoria = feature.properties.categoria || "";
           var audio = feature.properties.audio_link;
-          var popupContent = "<b>" + name + "</b><br><i>" + categoria + "</i>";
+          var popupContent = "<b>" + name + "</b>";
           if (audio && audio.startsWith("http")) {
             if (audio.includes("youtu")) {
               popupContent += "<br><a href='" + audio + "' target='_blank'>Escuchar audio</a>";
@@ -98,16 +85,17 @@
       }).addTo(map);
     });
 
-  // Leyenda
+  // Leyenda manual
   var legend = L.control({position: 'bottomright'});
   legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'legend');
     div.innerHTML += "<b>Leyenda</b><br>";
-    for (var key in categoryColors) {
-      div.innerHTML +=
-        '<i style="background:' + categoryColors[key] + '"></i> ' +
-        key + '<br>';
-    }
+    div.innerHTML += '<i style="background:#0ed4fb"></i> Puentes<br>';
+    div.innerHTML += '<i style="background:#337fff"></i> Avenidas<br>';
+    div.innerHTML += '<i style="background:#7682db"></i> Barrios y calles Emblemáticas<br>';
+    div.innerHTML += '<i style="background:#e8ba11"></i> Ferias Libres<br>';
+    div.innerHTML += '<i style="background:#148f16"></i> Parques y humedales<br>';
+    div.innerHTML += '<i style="background:#ff0000"></i> Epicentros Urbanos<br>';
     return div;
   };
   legend.addTo(map);
