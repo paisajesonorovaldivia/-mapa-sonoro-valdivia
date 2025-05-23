@@ -2,73 +2,93 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Mapa Sonoro Valdivia - Estilo Intercambiable</title>
+  <title>Mapa Sonoro Valdivia - Con Leyenda</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <style>
     #map { height: 100vh; }
+    .legend {
+      background: white;
+      padding: 10px;
+      line-height: 1.5em;
+      font-size: 13px;
+      color: #333;
+      box-shadow: 0 0 5px rgba(0,0,0,0.4);
+    }
+    .legend i {
+      width: 16px;
+      height: 16px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
-  <div id="map"></div>
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-  <script>
-    var light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap & CartoDB', subdomains: 'abcd', maxZoom: 19
-    });
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script>
+  var map = L.map('map').setView([-39.8142, -73.2459], 13);
 
-    var dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap & CartoDB', subdomains: 'abcd', maxZoom: 19
-    });
+  var light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap & CartoDB', subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
 
-    var terrain = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
-    });
+  var categoryColors = {
+    "Puentes": "#0ed4fb",
+    "Avenidas": "#337fff",
+    "Barrios y calles Emblematicas": "#7682db",
+    "Ferias Libres": "#e8ba11",
+    "Parques y humedales": "#148f16",
+    "Plazas": "#7682db",
+    "Epicentros Urbanos": "#ff0000"
+  };
 
-    var map = L.map('map', {
-      center: [-39.8142, -73.2459],
-      zoom: 13,
-      layers: [light]
-    });
-
-    var baseMaps = {
-      "Claro": light,
-      "Oscuro": dark,
-      "Terreno": terrain
-    };
-
-    L.control.layers(baseMaps).addTo(map);
-
-    fetch('mapa50avanzado.geojson')
-      .then(res => res.json())
-      .then(data => {
-        L.geoJSON(data, {
-          pointToLayer: function (feature, latlng) {
-            var color = feature.properties["marker-color"] || "#3388ff";
-            return L.circleMarker(latlng, {
-              radius: 8,
-              fillColor: color,
-              color: "#000",
-              weight: 1,
-              opacity: 1,
-              fillOpacity: 0.8
-            });
-          },
-          onEachFeature: function (feature, layer) {
-            var name = feature.properties.name || "Sin título";
-            var audio = feature.properties.audio_link;
-            var popupContent = "<b>" + name + "</b>";
-            if (audio && audio.startsWith("http")) {
-              if (audio.includes("youtu")) {
-                popupContent += "<br><a href='" + audio + "' target='_blank'>Escuchar audio</a>";
-              } else {
-                popupContent += "<br><audio controls src='" + audio + "'></audio>";
-              }
+  fetch('MapaterminadoconColores.geojson')
+    .then(res => res.json())
+    .then(data => {
+      L.geoJSON(data, {
+        pointToLayer: function (feature, latlng) {
+          var categoria = feature.properties.categoria;
+          var color = categoryColors[categoria] || "#3388ff";
+          return L.circleMarker(latlng, {
+            radius: 8,
+            fillColor: color,
+            color: "#000",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+          });
+        },
+        onEachFeature: function (feature, layer) {
+          var name = feature.properties.name || "Sin título";
+          var categoria = feature.properties.categoria || "";
+          var audio = feature.properties.audio_link;
+          var popupContent = "<b>" + name + "</b><br><i>" + categoria + "</i>";
+          if (audio && audio.startsWith("http")) {
+            if (audio.includes("youtu")) {
+              popupContent += "<br><a href='" + audio + "' target='_blank'>Escuchar audio</a>";
+            } else {
+              popupContent += "<br><audio controls src='" + audio + "'></audio>";
             }
-            layer.bindPopup(popupContent);
           }
-        }).addTo(map);
-      });
-  </script>
+          layer.bindPopup(popupContent);
+        }
+      }).addTo(map);
+    });
+
+  var legend = L.control({position: 'bottomright'});
+  legend.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'legend');
+    div.innerHTML += "<b>Leyenda</b><br>";
+    for (var key in categoryColors) {
+      div.innerHTML +=
+        '<i style="background:' + categoryColors[key] + '"></i> ' +
+        key + '<br>';
+    }
+    return div;
+  };
+  legend.addTo(map);
+</script>
 </body>
 </html>
